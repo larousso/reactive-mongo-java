@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 /**
- * Created by 97306p on 12/04/2017.
+ * Created by adelegue on 12/04/2017.
  */
 public class SimpleResult<T> {
     private final Publisher<T> result;

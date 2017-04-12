@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import static org.reactivecouchbase.json.Syntax.*;
 
 /**
- * Created by 97306p on 12/04/2017.
+ * Created by adelegue on 12/04/2017.
  */
 public class ReactiveMongoClientTest {
 
