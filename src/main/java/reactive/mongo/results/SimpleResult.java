@@ -13,11 +13,11 @@ import java.util.concurrent.CompletionStage;
 /**
  * Created by 97306p on 12/04/2017.
  */
-public class SimpleFindResult<T> {
+public class SimpleResult<T> {
     private final Publisher<T> result;
     private final Materializer materializer;
 
-    public SimpleFindResult(Publisher<T> result, Materializer materializer) {
+    public SimpleResult(Publisher<T> result, Materializer materializer) {
         this.result = result;
         this.materializer = materializer;
     }

@@ -8,7 +8,6 @@ import javaslang.control.Option;
 import org.junit.Test;
 import org.reactivecouchbase.json.JsValue;
 import org.reactivecouchbase.json.Json;
-import reactive.mongo.results.SimpleFindResult;
 
 import java.util.concurrent.ExecutionException;
 

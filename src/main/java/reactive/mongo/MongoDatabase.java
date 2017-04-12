@@ -12,10 +12,9 @@ import com.mongodb.reactivestreams.client.Success;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
-import org.reactivecouchbase.json.JsValue;
 import org.reactivestreams.Publisher;
 import reactive.mongo.codec.Conversions;
-import reactive.mongo.results.SimpleFindResult;
+import reactive.mongo.results.SimpleResult;
 
 import java.util.List;
 
@@ -93,31 +92,31 @@ public class MongoDatabase {
         return mongoDatabase.runCommand(command, readPreference, clazz);
     }
 
-    public SimpleFindResult<Success> drop() {
-        return new SimpleFindResult<>(mongoDatabase.drop(), materializer);
+    public SimpleResult<Success> drop() {
+        return new SimpleResult<>(mongoDatabase.drop(), materializer);
     }
 
-    public SimpleFindResult<String> listCollectionNames() {
-        return new SimpleFindResult<>(mongoDatabase.listCollectionNames(), materializer);
+    public SimpleResult<String> listCollectionNames() {
+        return new SimpleResult<>(mongoDatabase.listCollectionNames(), materializer);
     }
 
-    public SimpleFindResult<Document> listCollections() {
-        return new SimpleFindResult<>(mongoDatabase.listCollections(), materializer);
+    public SimpleResult<Document> listCollections() {
+        return new SimpleResult<>(mongoDatabase.listCollections(), materializer);
     }
 
-    public SimpleFindResult<Success> createCollection(String collectionName) {
-        return new SimpleFindResult<>(mongoDatabase.createCollection(collectionName), materializer);
+    public SimpleResult<Success> createCollection(String collectionName) {
+        return new SimpleResult<>(mongoDatabase.createCollection(collectionName), materializer);
     }
 
-    public SimpleFindResult<Success> createCollection(String collectionName, CreateCollectionOptions options) {
-        return new SimpleFindResult<>(mongoDatabase.createCollection(collectionName, options), materializer);
+    public SimpleResult<Success> createCollection(String collectionName, CreateCollectionOptions options) {
+        return new SimpleResult<>(mongoDatabase.createCollection(collectionName, options), materializer);
     }
 
-    public SimpleFindResult<Success> createView(String viewName, String viewOn, List<? extends Bson> pipeline) {
-        return new SimpleFindResult<>(mongoDatabase.createView(viewName, viewOn, pipeline), materializer);
+    public SimpleResult<Success> createView(String viewName, String viewOn, List<? extends Bson> pipeline) {
+        return new SimpleResult<>(mongoDatabase.createView(viewName, viewOn, pipeline), materializer);
     }
 
-    public SimpleFindResult<Success> createView(String viewName, String viewOn, List<? extends Bson> pipeline, CreateViewOptions createViewOptions) {
-        return new SimpleFindResult<>(mongoDatabase.createView(viewName, viewOn, pipeline, createViewOptions), materializer);
+    public SimpleResult<Success> createView(String viewName, String viewOn, List<? extends Bson> pipeline, CreateViewOptions createViewOptions) {
+        return new SimpleResult<>(mongoDatabase.createView(viewName, viewOn, pipeline, createViewOptions), materializer);
     }
 }

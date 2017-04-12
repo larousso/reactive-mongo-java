@@ -6,7 +6,7 @@ import akka.stream.Materializer;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.bson.Document;
-import reactive.mongo.results.SimpleFindResult;
+import reactive.mongo.results.SimpleResult;
 
 /**
  * Created by 97306p on 12/04/2017.
@@ -40,11 +40,11 @@ public class ReactiveMongoClient {
         return mongoClient.getSettings();
     }
 
-    public SimpleFindResult<String> listDatabaseNames() {
-        return new SimpleFindResult<>(mongoClient.listDatabaseNames(), materializer);
+    public SimpleResult<String> listDatabaseNames() {
+        return new SimpleResult<>(mongoClient.listDatabaseNames(), materializer);
     }
 
-    public SimpleFindResult<Document> listDatabases() {
-        return new SimpleFindResult<>(mongoClient.listDatabases(), materializer);
+    public SimpleResult<Document> listDatabases() {
+        return new SimpleResult<>(mongoClient.listDatabases(), materializer);
     }
 }

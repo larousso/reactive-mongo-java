@@ -19,13 +19,13 @@ import reactive.mongo.codec.Conversions;
 /**
  * Created by 97306p on 12/04/2017.
  */
-public class SimpleJsValueResult {
+public class JsonResult {
 
-    private final Publisher<Document> result;
-    private final Materializer materializer;
-    private final Conversions conversions;
+    final Publisher<Document> result;
+    final Materializer materializer;
+    final Conversions conversions;
 
-    public SimpleJsValueResult(Publisher<Document> result, Conversions conversions, Materializer materializer) {
+    public JsonResult(Publisher<Document> result, Conversions conversions, Materializer materializer) {
         this.result = result;
         this.conversions = conversions;
         this.materializer = materializer;
