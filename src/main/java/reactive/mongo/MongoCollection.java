@@ -38,7 +38,7 @@ public class MongoCollection {
 
     public MongoCollection(Conversions conversions, com.mongodb.reactivestreams.client.MongoCollection<Document> collection, ActorSystem system) {
         this.conversions = conversions;
-        this.collection = collection; //.withCodecRegistry(CodecRegistries.fromCodecs(new JsValueCodec(conversions)));
+        this.collection = collection;
         this.materializer = ActorMaterializer.create(system);
         this.system = system;
     }

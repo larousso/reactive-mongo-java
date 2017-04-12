@@ -15,6 +15,7 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import javaslang.control.Option;
+import org.reactivecouchbase.json.mapping.Reader;
 import reactive.mongo.codec.Conversions;
 
 /**
@@ -31,12 +32,20 @@ public class FindJsonResult extends JsonResult {
 
     @Override
     public CompletionStage<Option<JsValue>> one() {
-        return Source
-                .fromPublisher(this.result.first())
-                .map(conversions::fromDocument)
+        return source()
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);
     }
+
+
+    @Override
+    public <T> CompletionStage<Option<T>> one(Reader<T> reader) {
+        return source()
+                .via(toObj(reader))
+                .runWith(Sink.headOption(), materializer)
+                .thenApply(Option::ofOptional);
+    }
+
 
     public FindJsonResult filter(Bson filter) {
         return new FindJsonResult(result.filter(filter), conversions, materializer);

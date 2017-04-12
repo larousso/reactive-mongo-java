@@ -23,15 +23,13 @@ public class SimpleResult<T> {
     }
 
     public CompletionStage<Option<T>> one() {
-        return Source
-                .fromPublisher(this.result)
+        return source()
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);
     }
 
     public CompletionStage<List<T>> list() {
-        return Source
-                .fromPublisher(this.result)
+        return source()
                 .runWith(Sink.seq(), materializer);
     }
 

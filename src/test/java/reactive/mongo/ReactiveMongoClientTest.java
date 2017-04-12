@@ -39,7 +39,7 @@ public class ReactiveMongoClientTest {
         Option<Success> name = collection.insertOne(document).one().toCompletableFuture().get();
 
         JsValue fromDb = collection.find(Json.obj($("name", "Jean Paul"))).one().toCompletableFuture().get().get();
-        assertThat(fromDb).isEqualTo(document);
+        assertThat(fromDb.asObject().remove("_id")).isEqualTo(document);
     }
 
 
