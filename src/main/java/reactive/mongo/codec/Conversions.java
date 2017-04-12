@@ -2,9 +2,7 @@ package reactive.mongo.codec;
 
 import org.bson.BsonDocument;
 import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.conversions.Bson;
 import org.reactivecouchbase.json.JsValue;
 import org.reactivecouchbase.json.Json;
 

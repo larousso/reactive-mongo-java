@@ -1,17 +1,21 @@
 package reactive.mongo;
 
-import akka.actor.ActorSystem;
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoClients;
-import com.mongodb.reactivestreams.client.Success;
-import javaslang.control.Option;
-import org.junit.Test;
-import org.reactivecouchbase.json.JsValue;
-import org.reactivecouchbase.json.Json;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.reactivecouchbase.json.Syntax.$;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.reactivecouchbase.json.Syntax.*;
+import org.junit.Test;
+import org.reactivecouchbase.json.JsObject;
+import org.reactivecouchbase.json.JsValue;
+import org.reactivecouchbase.json.Json;
+
+import com.mongodb.reactivestreams.client.MongoClient;
+import com.mongodb.reactivestreams.client.MongoClients;
+import com.mongodb.reactivestreams.client.Success;
+
+import akka.actor.ActorSystem;
+import javaslang.control.Option;
 
 /**
  * Created by adelegue on 12/04/2017.
@@ -28,11 +32,14 @@ public class ReactiveMongoClientTest {
         MongoDatabase database = client.getDatabase("test");
         MongoCollection collection = database.getCollection("collection");
 
-        Option<Success> name = collection.insertOne(Json.obj($("name", "Jean Paul"))).one().toCompletableFuture().get();
+        JsObject document = Json.obj(
+                $("name", "Jean Paul"),
+                $("child", $("name", "Jean Phil"))
+        );
+        Option<Success> name = collection.insertOne(document).one().toCompletableFuture().get();
 
-        JsValue name1 = collection.find(Json.obj($("name", "Jean Paul"))).one().toCompletableFuture().get().get();
-
-        System.out.println(name1);
+        JsValue fromDb = collection.find(Json.obj($("name", "Jean Paul"))).one().toCompletableFuture().get().get();
+        assertThat(fromDb).isEqualTo(document);
     }
 
 
