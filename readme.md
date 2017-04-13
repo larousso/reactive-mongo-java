@@ -4,6 +4,27 @@ Wrapper around mongo reactive stream client with AkkaStream, Javaslang and JsonL
 
 ## Installation 
 
+Repository :
+ 
+``` 
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://raw.githubusercontent.com/larousso/elastic-java-rest-client/master/repository/releases/'
+    }
+    flatDir {
+        dirs 'libs'
+    }
+}
+```
+
+Dependency : 
+
+```
+dependencies {
+    compile("com.adelegue:reactive-mongo-java:1.0.0")
+}
+```
 
 
 ## Usage 
