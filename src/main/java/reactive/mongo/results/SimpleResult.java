@@ -23,17 +23,17 @@ public class SimpleResult<T> {
     }
 
     public CompletionStage<Option<T>> one() {
-        return source()
+        return stream()
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);
     }
 
     public CompletionStage<List<T>> list() {
-        return source()
+        return stream()
                 .runWith(Sink.seq(), materializer);
     }
 
-    public Source<T, NotUsed> source() {
+    public Source<T, NotUsed> stream() {
         return Source.fromPublisher(this.result);
     }
 
