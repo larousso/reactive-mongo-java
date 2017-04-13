@@ -10,7 +10,7 @@ Repository :
 repositories {
     mavenCentral()
     maven {
-        url 'https://raw.githubusercontent.com/larousso/elastic-java-rest-client/master/repository/releases/'
+        url 'https://raw.githubusercontent.com/larousso/reactive-mongo-java/master/repository/releases/'
     }
     flatDir {
         dirs 'libs'
