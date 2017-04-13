@@ -40,15 +40,13 @@ public class ReactiveMongoClientTest {
 
     String databaseName;
     MongoDatabase database;
-    MongoClient mongoClient;
     ReactiveMongoClient client;
     ActorSystem actorSystem;
 
     @Before
     public void setUp() {
-        mongoClient = MongoClients.create();
         actorSystem = ActorSystem.create();
-        client = ReactiveMongoClient.create(mongoClient, actorSystem);
+        client = ReactiveMongoClient.create(actorSystem);
         databaseName = "test-" + random.nextInt();
         database = client.getDatabase(databaseName);
     }

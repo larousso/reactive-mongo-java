@@ -30,11 +30,9 @@ dependencies {
 ## Usage 
 
 ```java 
-//Native reactive streams Mongo client  
-MongoClient nativeClient = MongoClients.create();
 
 // Reactive Mongo Java Client
-ReactiveMongoClient client = ReactiveMongoClient.create(nativeClient, ActorSystem.create());
+ReactiveMongoClient client = ReactiveMongoClient.create(actorSystem);
 
 //Get Database
 MongoDatabase database = client.getDatabase("myDb");
