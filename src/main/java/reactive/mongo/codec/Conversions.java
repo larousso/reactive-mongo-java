@@ -1,10 +1,12 @@
 package reactive.mongo.codec;
 
-import org.bson.BsonDocument;
-import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.reactivecouchbase.json.JsValue;
-import org.reactivecouchbase.json.Json;
+import static javaslang.API.Case;
+import static javaslang.API.Match;
+import static javaslang.Predicates.instanceOf;
+
+import org.bson.*;
+import org.bson.types.Decimal128;
+import org.reactivecouchbase.json.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,11 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Conversions {
 
     final ObjectMapper mapper;
-    final CodecRegistry codecRegistry;
 
-    public Conversions(ObjectMapper mapper, CodecRegistry codecRegistry) {
+    public Conversions(ObjectMapper mapper) {
         this.mapper = mapper;
-        this.codecRegistry = codecRegistry;
     }
 
     public JsValue fromDocument(Document document) {
@@ -30,8 +30,45 @@ public class Conversions {
         return mapper.convertValue(Json.toJackson(json), Document.class);
     }
 
-    public BsonDocument toBson(JsValue json) {
-        Document document = toDocument(json);
-        return document.toBsonDocument(BsonDocument.class, codecRegistry);
+    public BsonDocument toBson(JsObject json) {
+        return toBsonDocument(json).asDocument();
+    }
+
+    private BsonValue toBsonArray(JsArray array) {
+        return new BsonArray(array.values.map(this::toBsonValue).toJavaList());
+    }
+
+    private BsonValue toBsonBoolean(JsBoolean bool) {
+        return new BsonBoolean(bool.value);
+    }
+
+    private BsonValue toBsonNull(JsValue value) {
+        return new BsonNull();
+    }
+
+    private BsonValue toBsonNumber(JsNumber value) {
+        return new BsonDecimal128(new Decimal128(value.value));
+    }
+
+    private BsonValue toBsonDocument(JsObject obj) {
+        BsonDocument bsonDocument = new BsonDocument();
+        obj.values.forEach(pair -> bsonDocument.append(pair._1, toBsonValue(pair._2)));
+        return bsonDocument;
+    }
+
+    private BsonValue toBsonString(JsString str) {
+        return new BsonString(str.value);
+    }
+
+    public BsonValue toBsonValue(JsValue json) {
+        return Match(json).of(
+                Case(instanceOf(JsArray.class), this::toBsonArray),
+                Case(instanceOf(JsBoolean.class), this::toBsonBoolean),
+                Case(instanceOf(JsNull.class), this::toBsonNull),
+                Case(instanceOf(JsUndefined.class), this::toBsonNull),
+                Case(instanceOf(JsNumber.class), this::toBsonNumber),
+                Case(instanceOf(JsObject.class), this::toBsonDocument),
+                Case(instanceOf(JsString.class), this::toBsonString)
+        );
     }
 }

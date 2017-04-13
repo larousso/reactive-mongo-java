@@ -32,7 +32,7 @@ public class MongoDatabase {
     public MongoDatabase(com.mongodb.reactivestreams.client.MongoDatabase mongoDatabase, ActorSystem actorSystem, Materializer materializer) {
         this.mongoDatabase = mongoDatabase;
         this.actorSystem = actorSystem;
-        this.conversions = new Conversions(new ObjectMapper(), mongoDatabase.getCodecRegistry());
+        this.conversions = new Conversions(new ObjectMapper());
         this.materializer = materializer;
     }
 

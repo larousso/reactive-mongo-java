@@ -13,7 +13,6 @@ import com.mongodb.reactivestreams.client.FindPublisher;
 
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
 import javaslang.control.Option;
 import org.reactivecouchbase.json.mapping.Reader;
 import reactive.mongo.codec.Conversions;
@@ -32,7 +31,7 @@ public class FindJsonResult extends JsonResult {
 
     @Override
     public CompletionStage<Option<JsValue>> one() {
-        return source()
+        return stream()
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);
     }
@@ -40,7 +39,7 @@ public class FindJsonResult extends JsonResult {
 
     @Override
     public <T> CompletionStage<Option<T>> one(Reader<T> reader) {
-        return source()
+        return stream()
                 .via(toObj(reader))
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);

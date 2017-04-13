@@ -1,13 +1,11 @@
 package reactive.mongo.results;
 
-import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import akka.stream.javadsl.Flow;
+import javaslang.collection.List;
 import org.bson.Document;
 import org.reactivecouchbase.json.JsValue;
-
-import com.mongodb.reactivestreams.client.FindPublisher;
 
 import akka.NotUsed;
 import akka.stream.Materializer;
@@ -34,35 +32,41 @@ public class JsonResult {
     }
 
     public CompletionStage<Option<JsValue>> one() {
-        return source()
+        return stream()
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);
     }
 
     public <T> CompletionStage<Option<T>> one(Reader<T> reader) {
-        return source()
-                .via(toObj(reader))
+        return stream(reader)
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);
     }
 
 
     public CompletionStage<List<JsValue>> list() {
-        return source()
-                .runWith(Sink.seq(), materializer);
+        return stream()
+                .runWith(Sink.seq(), materializer)
+                .thenApply(List::ofAll);
     }
 
 
     public <T> CompletionStage<List<T>> list(Reader<T> reader) {
-        return source()
-                .via(toObj(reader))
-                .runWith(Sink.seq(), materializer);
+        return stream(reader)
+                .runWith(Sink.seq(), materializer)
+                .thenApply(List::ofAll);
     }
 
-    public Source<JsValue, NotUsed> source() {
+    public Source<JsValue, NotUsed> stream() {
         return Source
                 .fromPublisher(this.result)
                 .via(toJson());
+    }
+
+
+    public <T> Source<T, NotUsed> stream(Reader<T> reader) {
+        return stream()
+                .via(toObj(reader));
     }
 
     protected Flow<Document, JsValue, NotUsed> toJson(){
