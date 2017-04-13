@@ -4,9 +4,9 @@ Wrapper around mongo reactive stream client with AkkaStream, Javaslang and JsonL
 
 ## Installation 
 
-Repository :
+### Repository :
  
-``` 
+```groovy
 repositories {
     mavenCentral()
     maven {
@@ -18,9 +18,9 @@ repositories {
 }
 ```
 
-Dependency : 
+### Dependency : 
 
-```
+```groovy
 dependencies {
     compile("com.adelegue:reactive-mongo-java:1.0.0")
 }
