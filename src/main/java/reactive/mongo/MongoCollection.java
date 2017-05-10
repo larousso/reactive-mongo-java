@@ -6,7 +6,6 @@ import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.reactivecouchbase.json.JsObject;
-import org.reactivecouchbase.json.JsValue;
 
 import com.mongodb.MongoNamespace;
 import com.mongodb.ReadConcern;
@@ -21,25 +20,22 @@ import com.mongodb.reactivestreams.client.*;
 import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
-import org.reactivestreams.Publisher;
-import reactive.mongo.codec.Conversions;
+import reactive.mongo.codec.tmp.Conversions;
 import reactive.mongo.results.FindJsonResult;
 import reactive.mongo.results.SimpleResult;
-import reactive.mongo.results.JsonResult;
-
-import javax.print.Doc;
+import reactive.mongo.results.DocResult;
 
 /**
  * Created by adelegue on 12/04/2017.
  */
-public class MongoCollection {
+public class MongoCollection<T> {
 
-    private final com.mongodb.reactivestreams.client.MongoCollection<Document> collection;
+    private final com.mongodb.reactivestreams.client.MongoCollection<T> collection;
     private final Materializer materializer;
     private final Conversions conversions;
     private final  ActorSystem system;
 
-    public MongoCollection(Conversions conversions, com.mongodb.reactivestreams.client.MongoCollection<Document> collection, ActorSystem system) {
+    public MongoCollection(Conversions conversions, com.mongodb.reactivestreams.client.MongoCollection<T> collection, ActorSystem system) {
         this.conversions = conversions;
         this.collection = collection;
         this.materializer = ActorMaterializer.create(system);
@@ -67,19 +63,19 @@ public class MongoCollection {
     }
 
     public MongoCollection withCodecRegistry(CodecRegistry codecRegistry) {
-        return new MongoCollection(conversions, collection.withCodecRegistry(codecRegistry), system);
+        return new MongoCollection<>(conversions, collection.withCodecRegistry(codecRegistry), system);
     }
 
     public MongoCollection withReadPreference(ReadPreference readPreference) {
-        return new MongoCollection(conversions, collection.withReadPreference(readPreference), system);
+        return new MongoCollection<>(conversions, collection.withReadPreference(readPreference), system);
     }
 
     public MongoCollection withWriteConcern(WriteConcern writeConcern) {
-        return new MongoCollection(conversions, collection.withWriteConcern(writeConcern), system);
+        return new MongoCollection<>(conversions, collection.withWriteConcern(writeConcern), system);
     }
 
     public MongoCollection withReadConcern(ReadConcern readConcern) {
-        return new MongoCollection(conversions, collection.withReadConcern(readConcern), system);
+        return new MongoCollection<>(conversions, collection.withReadConcern(readConcern), system);
     }
 
     public SimpleResult<Long> count() {
@@ -113,16 +109,16 @@ public class MongoCollection {
         return collection.distinct(fieldName, filter, tResultClass);
     }
 
-    public FindJsonResult find() {
-        return new FindJsonResult(collection.find(), conversions, materializer);
+    public FindJsonResult<T> find() {
+        return new FindJsonResult<>(collection.find(), conversions, materializer);
     }
 
-    public FindJsonResult find(JsObject filter) {
-        return new FindJsonResult(collection.find(conversions.toBson(filter)), conversions, materializer);
+    public FindJsonResult<T> find(JsObject filter) {
+        return new FindJsonResult<>(collection.find(conversions.toBson(filter)), conversions, materializer);
     }
 
-    public FindJsonResult find(Bson filter) {
-        return new FindJsonResult(collection.find(filter), conversions, materializer);
+    public FindJsonResult<T> find(Bson filter) {
+        return new FindJsonResult<>(collection.find(filter), conversions, materializer);
     }
 
     public AggregatePublisher<Document> aggregate(List<? extends Bson> pipeline) {
@@ -141,45 +137,27 @@ public class MongoCollection {
         return collection.mapReduce(mapFunction, reduceFunction, clazz);
     }
 
-    public SimpleResult<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends Document>> requests) {
+    public SimpleResult<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests) {
         return new SimpleResult<>(collection.bulkWrite(requests), materializer);
     }
 
-    public SimpleResult<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends Document>> requests, BulkWriteOptions options) {
+    public SimpleResult<BulkWriteResult> bulkWrite(List<? extends WriteModel<? extends T>> requests, BulkWriteOptions options) {
         return new SimpleResult<>(collection.bulkWrite(requests, options), materializer);
     }
 
-    public SimpleResult<Success> insertOne(JsValue jsValue) {
-        return new SimpleResult<>(collection.insertOne(conversions.toDocument(jsValue)), materializer);
+    public SimpleResult<Success> insertOne(T document) {
+        return new SimpleResult<>(collection.insertOne(document), materializer);
     }
 
-    public SimpleResult<Success> insertOne(JsValue jsValue, InsertOneOptions options) {
-        return new SimpleResult<>(collection.insertOne(conversions.toDocument(jsValue), options), materializer);
+    public SimpleResult<Success> insertOne(T document, InsertOneOptions options) {
+        return new SimpleResult<>(collection.insertOne(document, options), materializer);
     }
 
-    public SimpleResult<Success> insertOne(Document jsValue) {
-        return new SimpleResult<>(collection.insertOne(jsValue), materializer);
-    }
-
-    public SimpleResult<Success> insertOne(Document jsValue, InsertOneOptions options) {
-        return new SimpleResult<>(collection.insertOne(jsValue, options), materializer);
-    }
-
-    public SimpleResult<Success> insertMany(List<? extends JsValue> jsValues) {
-        List<Document> documents = javaslang.collection.List.ofAll(jsValues).map(conversions::toDocument).toJavaList();
+    public SimpleResult<Success> insertMany(List<? extends T> documents) {
         return new SimpleResult<>(collection.insertMany(documents), materializer);
     }
 
-    public SimpleResult<Success> insertMany(List<? extends JsValue> jsValues, InsertManyOptions options) {
-        List<Document> documents = javaslang.collection.List.ofAll(jsValues).map(conversions::toDocument).toJavaList();
-        return new SimpleResult<>(collection.insertMany(documents, options), materializer);
-    }
-
-    public SimpleResult<Success> insertManyRaw(List<Document> documents) {
-        return new SimpleResult<>(collection.insertMany(documents), materializer);
-    }
-
-    public SimpleResult<Success> insertManyRaw(List<Document> documents, InsertManyOptions options) {
+    public SimpleResult<Success> insertMany(List<? extends T> documents, InsertManyOptions options) {
         return new SimpleResult<>(collection.insertMany(documents, options), materializer);
     }
 
@@ -199,19 +177,12 @@ public class MongoCollection {
         return new SimpleResult<>(collection.deleteMany(filter), materializer);
     }
 
-    public SimpleResult<UpdateResult> replaceOne(JsObject filter, JsValue replacement) {
-        return new SimpleResult<>(collection.replaceOne(conversions.toBson(filter), conversions.toDocument(replacement)), materializer);
+    public SimpleResult<UpdateResult> replaceOne(JsObject filter, T replacement) {
+        return new SimpleResult<>(collection.replaceOne(conversions.toBson(filter), replacement), materializer);
     }
 
-    public SimpleResult<UpdateResult> replaceOne(JsObject filter, JsValue replacement, UpdateOptions options) {
-        return new SimpleResult<>(collection.replaceOne(conversions.toBson(filter), conversions.toDocument(replacement), options), materializer);
-    }
-    public SimpleResult<UpdateResult> replaceOne(Bson filter, Document replacement) {
-        return new SimpleResult<>(collection.replaceOne(filter, replacement), materializer);
-    }
-
-    public SimpleResult<UpdateResult> replaceOne(Bson filter, Document replacement, UpdateOptions options) {
-        return new SimpleResult<>(collection.replaceOne(filter, replacement, options), materializer);
+    public SimpleResult<UpdateResult> replaceOne(JsObject filter, T replacement, UpdateOptions options) {
+        return new SimpleResult<>(collection.replaceOne(conversions.toBson(filter), replacement, options), materializer);
     }
 
     public SimpleResult<UpdateResult> updateOne(JsObject filter, JsObject update) {
@@ -246,54 +217,52 @@ public class MongoCollection {
         return new SimpleResult<>(collection.updateMany(filter, update, options), materializer);
     }
 
-    public JsonResult findOneAndDelete(JsObject filter) {
-        Publisher<Document> oneAndDelete = collection.findOneAndDelete(conversions.toBson(filter));
-        return new JsonResult(oneAndDelete, conversions, materializer);
+    public DocResult<T> findOneAndDelete(JsObject filter) {
+        return new DocResult<>(collection.findOneAndDelete(conversions.toBson(filter)), conversions, materializer);
     }
 
-    public JsonResult findOneAndDelete(JsObject filter, FindOneAndDeleteOptions options) {
-        return new JsonResult(collection.findOneAndDelete(conversions.toBson(filter), options), conversions, materializer);
+    public DocResult<T> findOneAndDelete(JsObject filter, FindOneAndDeleteOptions options) {
+        return new DocResult<>(collection.findOneAndDelete(conversions.toBson(filter), options), conversions, materializer);
     }
 
-    public JsonResult findOneAndDelete(Bson filter) {
-        Publisher<Document> oneAndDelete = collection.findOneAndDelete(filter);
-        return new JsonResult(oneAndDelete, conversions, materializer);
+    public DocResult<T> findOneAndDelete(Bson filter) {
+        return new DocResult<>(collection.findOneAndDelete(filter), conversions, materializer);
     }
 
-    public JsonResult findOneAndDelete(Bson filter, FindOneAndDeleteOptions options) {
-        return new JsonResult(collection.findOneAndDelete(filter, options), conversions, materializer);
+    public DocResult<T> findOneAndDelete(Bson filter, FindOneAndDeleteOptions options) {
+        return new DocResult<>(collection.findOneAndDelete(filter, options), conversions, materializer);
     }
 
-    public JsonResult findOneAndReplace(JsObject filter, JsValue replacement) {
-        return new JsonResult(collection.findOneAndReplace(conversions.toBson(filter), conversions.toDocument(replacement)), conversions, materializer);
+    public DocResult<T> findOneAndReplace(JsObject filter, T replacement) {
+        return new DocResult<>(collection.findOneAndReplace(conversions.toBson(filter), replacement), conversions, materializer);
     }
 
-    public JsonResult findOneAndReplace(JsObject filter, JsValue replacement, FindOneAndReplaceOptions options) {
-        return new JsonResult(collection.findOneAndReplace(conversions.toBson(filter), conversions.toDocument(replacement), options), conversions, materializer);
+    public DocResult<T> findOneAndReplace(JsObject filter, T replacement, FindOneAndReplaceOptions options) {
+        return new DocResult<>(collection.findOneAndReplace(conversions.toBson(filter), replacement, options), conversions, materializer);
     }
 
-    public JsonResult findOneAndReplace(Bson filter, Document replacement) {
-        return new JsonResult(collection.findOneAndReplace(filter, replacement), conversions, materializer);
+    public DocResult<T> findOneAndReplace(Bson filter, T replacement) {
+        return new DocResult<>(collection.findOneAndReplace(filter, replacement), conversions, materializer);
     }
 
-    public JsonResult findOneAndReplace(Bson filter, Document replacement, FindOneAndReplaceOptions options) {
-        return new JsonResult(collection.findOneAndReplace(filter, replacement, options), conversions, materializer);
+    public DocResult<T> findOneAndReplace(Bson filter, T replacement, FindOneAndReplaceOptions options) {
+        return new DocResult<>(collection.findOneAndReplace(filter, replacement, options), conversions, materializer);
     }
 
-    public JsonResult findOneAndUpdate(JsObject filter, JsObject update) {
-        return new JsonResult(collection.findOneAndUpdate(conversions.toBson(filter), conversions.toBson(update)), conversions, materializer);
+    public DocResult<T> findOneAndUpdate(JsObject filter, JsObject update) {
+        return new DocResult<>(collection.findOneAndUpdate(conversions.toBson(filter), conversions.toBson(update)), conversions, materializer);
     }
 
-    public JsonResult findOneAndUpdate(JsObject filter, JsObject update, FindOneAndUpdateOptions options) {
-        return new JsonResult(collection.findOneAndUpdate(conversions.toBson(filter), conversions.toBson(update), options), conversions, materializer);
+    public DocResult<T> findOneAndUpdate(JsObject filter, JsObject update, FindOneAndUpdateOptions options) {
+        return new DocResult<>(collection.findOneAndUpdate(conversions.toBson(filter), conversions.toBson(update), options), conversions, materializer);
     }
 
-    public JsonResult findOneAndUpdate(Bson filter, JsObject update) {
-        return new JsonResult(collection.findOneAndUpdate(filter, conversions.toBson(update)), conversions, materializer);
+    public DocResult<T> findOneAndUpdate(Bson filter, JsObject update) {
+        return new DocResult<>(collection.findOneAndUpdate(filter, conversions.toBson(update)), conversions, materializer);
     }
 
-    public JsonResult findOneAndUpdate(Bson filter, JsObject update, FindOneAndUpdateOptions options) {
-        return new JsonResult(collection.findOneAndUpdate(filter, conversions.toBson(update), options), conversions, materializer);
+    public DocResult<T> findOneAndUpdate(Bson filter, JsObject update, FindOneAndUpdateOptions options) {
+        return new DocResult<>(collection.findOneAndUpdate(filter, conversions.toBson(update), options), conversions, materializer);
     }
 
     public SimpleResult<Success> drop() {
@@ -320,8 +289,8 @@ public class MongoCollection {
         return new SimpleResult<>(collection.createIndex(key, options), materializer);
     }
 
-    public ListIndexesPublisher<Document> listIndexes() {
-        return collection.listIndexes();
+    public SimpleResult<Document> listIndexes() {
+        return new SimpleResult<>(collection.listIndexes(), materializer);
     }
 
     public SimpleResult<Success> dropIndex(String indexName) {
@@ -348,7 +317,7 @@ public class MongoCollection {
         return new SimpleResult<>(collection.renameCollection(newCollectionNamespace, options), materializer);
     }
 
-    public com.mongodb.reactivestreams.client.MongoCollection<Document> rawCollection() {
+    public com.mongodb.reactivestreams.client.MongoCollection<T> rawCollection() {
         return collection;
     }
 }

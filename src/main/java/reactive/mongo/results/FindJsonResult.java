@@ -3,9 +3,7 @@ package reactive.mongo.results;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.reactivecouchbase.json.JsValue;
 
 import com.mongodb.CursorType;
 import com.mongodb.client.model.Collation;
@@ -14,23 +12,23 @@ import com.mongodb.reactivestreams.client.FindPublisher;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import javaslang.control.Option;
-import org.reactivecouchbase.json.mapping.Reader;
-import reactive.mongo.codec.Conversions;
+import reactive.mongo.DocReader;
+import reactive.mongo.codec.tmp.Conversions;
 
 /**
  * Created by adelegue on 12/04/2017.
  */
-public class FindJsonResult extends JsonResult {
+public class FindJsonResult<DOC> extends DocResult<DOC> {
 
-    private final FindPublisher<Document> result;
+    private final FindPublisher<DOC> result;
 
-    public FindJsonResult(FindPublisher<Document> result, Conversions conversions, Materializer materializer) {
+    public FindJsonResult(FindPublisher<DOC> result, Conversions conversions, Materializer materializer) {
         super(result, conversions, materializer);
         this.result = result;
     }
 
     @Override
-    public CompletionStage<Option<JsValue>> one() {
+    public CompletionStage<Option<DOC>> one() {
         return stream()
                 .runWith(Sink.headOption(), materializer)
                 .thenApply(Option::ofOptional);
@@ -38,7 +36,7 @@ public class FindJsonResult extends JsonResult {
 
 
     @Override
-    public <T> CompletionStage<Option<T>> one(Reader<T> reader) {
+    public <T> CompletionStage<Option<T>> one(DocReader<DOC, T> reader) {
         return stream()
                 .via(toObj(reader))
                 .runWith(Sink.headOption(), materializer)

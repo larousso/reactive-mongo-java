@@ -8,12 +8,16 @@ import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.CreateViewOptions;
+import com.mongodb.reactivestreams.client.MongoClients;
 import com.mongodb.reactivestreams.client.Success;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
+import org.reactivecouchbase.json.JsValue;
 import org.reactivestreams.Publisher;
-import reactive.mongo.codec.Conversions;
+import reactive.mongo.codec.tmp.Conversions;
+import reactive.mongo.codec.JsValueCodecProvider;
 import reactive.mongo.results.SimpleResult;
 
 import java.util.List;
@@ -30,7 +34,8 @@ public class MongoDatabase {
     private final Materializer materializer;
 
     public MongoDatabase(com.mongodb.reactivestreams.client.MongoDatabase mongoDatabase, ActorSystem actorSystem, Materializer materializer) {
-        this.mongoDatabase = mongoDatabase;
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(CodecRegistries.fromProviders(new JsValueCodecProvider()), MongoClients.getDefaultCodecRegistry());
+        this.mongoDatabase = mongoDatabase.withCodecRegistry(codecRegistry);
         this.actorSystem = actorSystem;
         this.conversions = new Conversions(new ObjectMapper());
         this.materializer = materializer;
@@ -72,8 +77,12 @@ public class MongoDatabase {
         return new MongoDatabase(mongoDatabase.withReadConcern(readConcern), actorSystem, materializer);
     }
 
-    public MongoCollection getCollection(String collectionName) {
-        return new MongoCollection(conversions, mongoDatabase.getCollection(collectionName), actorSystem);
+    public MongoCollection<JsValue> getJsonCollection(String collectionName) {
+        return new MongoCollection<>(conversions, mongoDatabase.getCollection(collectionName, JsValue.class), actorSystem);
+    }
+
+    public MongoCollection<Document> getDocumentCollection(String collectionName) {
+        return new MongoCollection<>(conversions, mongoDatabase.getCollection(collectionName), actorSystem);
     }
 
     public Publisher<Document> runCommand(Bson command) {

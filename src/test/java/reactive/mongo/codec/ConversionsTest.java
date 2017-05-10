@@ -14,6 +14,8 @@ import org.reactivecouchbase.json.JsValue;
 import org.reactivecouchbase.json.Json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import reactive.mongo.codec.tmp.Conversions;
+
 /**
  * Created by 97306p on 12/04/2017.
  */

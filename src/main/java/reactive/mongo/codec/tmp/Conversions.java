@@ -1,9 +1,10 @@
-package reactive.mongo.codec;
+package reactive.mongo.codec.tmp;
 
 import static javaslang.API.Case;
 import static javaslang.API.Match;
 import static javaslang.Predicates.instanceOf;
 
+import javaslang.control.Option;
 import org.bson.*;
 import org.bson.types.Decimal128;
 import org.reactivecouchbase.json.*;
@@ -35,7 +36,7 @@ public class Conversions {
     }
 
     private BsonValue toBsonArray(JsArray array) {
-        return new BsonArray(array.values.map(this::toBsonValue).toJavaList());
+        return new BsonArray(array.values.map(e -> this.toBsonValue(Option.none(), e)).toJavaList());
     }
 
     private BsonValue toBsonBoolean(JsBoolean bool) {
@@ -52,7 +53,7 @@ public class Conversions {
 
     private BsonValue toBsonDocument(JsObject obj) {
         BsonDocument bsonDocument = new BsonDocument();
-        obj.values.forEach(pair -> bsonDocument.append(pair._1, toBsonValue(pair._2)));
+        obj.values.forEach(pair -> bsonDocument.append(pair._1, toBsonValue(Option.some(pair._1), pair._2)));
         return bsonDocument;
     }
 
@@ -60,7 +61,7 @@ public class Conversions {
         return new BsonString(str.value);
     }
 
-    public BsonValue toBsonValue(JsValue json) {
+    public BsonValue toBsonValue(Option<String> fieldName, JsValue json) {
         return Match(json).of(
                 Case(instanceOf(JsArray.class), this::toBsonArray),
                 Case(instanceOf(JsBoolean.class), this::toBsonBoolean),
