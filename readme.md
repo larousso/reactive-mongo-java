@@ -29,6 +29,13 @@ dependencies {
 
 ## Usage 
 
+```java
+import static reactive.mongo.reads.JsValueReads.reader; 
+import static reactive.mongo.json.MongoReads; 
+import static reactive.mongo.json.MongoWrites; 
+import static org.reactivecouchbase.json.Syntax.$;
+```
+
 ```java 
 
 // Reactive Mongo Java Client
@@ -38,28 +45,30 @@ ReactiveMongoClient client = ReactiveMongoClient.create(actorSystem);
 MongoDatabase database = client.getDatabase("myDb");
 
 //Get Collection 
-MongoCollection collection = database.getCollection("vikings");
+MongoCollection<JsValue> collection = database.getJsonCollection("vikings");
 
 
 //Insert 
 JsObject ragnar = Json.obj($("name", "Ragnard"), $("childs", Json.arr($("name", "Bjorn"))));
 CompletionStage<Option<Success>> insertStatus = collection.insertOne(ragnar).one();
 
-JsObject floki = Json.obj($("name", "Floki"));
-JsObject rollo = Json.obj($("name", "Rollo"));
+//With mongo extended json : 
+JsObject floki = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Floki"), $("created", MongoWrites.date(new Date())));
+JsObject rollo = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Rollo"), $("created", MongoWrites.date(new Date())));
+
 CompletionStage<Option<Success>> insertManyStatus = collection.insertMany(Arrays.asList(floki, rollo)).one();
 
 //Find one 
 CompletionStage<Option<JsValue>> ragnard = collection.find(Json.obj($("name", "Ragnard"))).one();
 
 //With conversion 
-CompletionStage<Option<Viking>> mayBeFloki = collection.find(Json.obj($("name", "Floki"))).one(Viking.reader);
+CompletionStage<Option<Viking>> mayBeFloki = collection.find(Json.obj($("name", "Floki"))).one(reader(Viking.reader));
 
 //Find multiple
 CompletionStage<List<JsValue>> values = collection.find().list();
 
 //With conversion 
-CompletionStage<List<Viking>> vikings = collection.find().list(Viking.reader);
+CompletionStage<List<Viking>> vikings = collection.find().list(reader(Viking.reader));
 
 //Stream 
 ActorSystem actorSystem = ActorSystem.create();
@@ -75,12 +84,13 @@ stream.drop(1)
         );
         
 // With conversion 
-Source<Viking, NotUsed> stream = collection.find().stream(Viking.reader);
+Source<Viking, NotUsed> stream = collection.find().stream(reader(Viking.reader));
 stream.drop(1)
         .runWith(
             Sink.foreach(viking -> System.out.println(viking)),
             materializer
         );
+        
         
 ```
 
