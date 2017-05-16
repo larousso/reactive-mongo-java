@@ -1,18 +1,16 @@
 package reactive.mongo.results;
 
-import java.util.concurrent.CompletionStage;
-
-import akka.stream.javadsl.Flow;
-import javaslang.collection.List;
-
 import akka.NotUsed;
 import akka.stream.Materializer;
+import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import javaslang.collection.List;
 import javaslang.control.Option;
 import org.reactivestreams.Publisher;
 import reactive.mongo.DocReader;
-import reactive.mongo.codec.tmp.Conversions;
+
+import java.util.concurrent.CompletionStage;
 
 /**
  * Created by adelegue on 12/04/2017.
@@ -21,11 +19,9 @@ public class DocResult<DOC> {
 
     final Publisher<DOC> result;
     final Materializer materializer;
-    final Conversions conversions;
 
-    public DocResult(Publisher<DOC> result, Conversions conversions, Materializer materializer) {
+    public DocResult(Publisher<DOC> result, Materializer materializer) {
         this.result = result;
-        this.conversions = conversions;
         this.materializer = materializer;
     }
 
@@ -67,7 +63,7 @@ public class DocResult<DOC> {
     }
 
     protected <T> Flow<DOC, T, NotUsed> toObj(DocReader<DOC, T> reader){
-        return Flow.<DOC>create().map(reader::read);
+        return Flow.<DOC>create().map(reader::read).mapConcat(e -> e);
     }
 
 }

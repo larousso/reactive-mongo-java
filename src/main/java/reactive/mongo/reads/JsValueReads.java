@@ -1,5 +1,6 @@
 package reactive.mongo.reads;
 
+import javaslang.control.Option;
 import org.reactivecouchbase.json.JsValue;
 import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.json.mapping.Reader;
@@ -21,7 +22,7 @@ public class JsValueReads<T> implements DocReader<JsValue, T> {
     }
 
     @Override
-    public T read(JsValue jsValue) {
-        return jsValue.as(reader);
+    public Option<T> read(JsValue jsValue) {
+        return jsValue.asOpt(reader);
     }
 }

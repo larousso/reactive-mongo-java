@@ -41,6 +41,7 @@ dependencies {
     testCompile("org.assertj:assertj-core:3.6.2")
     testCompile("junit:junit:4.12")
     testCompile("org.assertj:assertj-core:3.5.2")
+    testCompile("de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0")
 }
 
 publishing {

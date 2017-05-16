@@ -2,7 +2,6 @@ package reactive.mongo;
 
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
@@ -16,7 +15,6 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.reactivecouchbase.json.JsValue;
 import org.reactivestreams.Publisher;
-import reactive.mongo.codec.tmp.Conversions;
 import reactive.mongo.codec.JsValueCodecProvider;
 import reactive.mongo.results.SimpleResult;
 
@@ -30,14 +28,12 @@ public class MongoDatabase {
     final com.mongodb.reactivestreams.client.MongoDatabase mongoDatabase;
 
     final ActorSystem actorSystem;
-    private final Conversions conversions;
     private final Materializer materializer;
 
     public MongoDatabase(com.mongodb.reactivestreams.client.MongoDatabase mongoDatabase, ActorSystem actorSystem, Materializer materializer) {
         CodecRegistry codecRegistry = CodecRegistries.fromRegistries(CodecRegistries.fromProviders(new JsValueCodecProvider()), MongoClients.getDefaultCodecRegistry());
         this.mongoDatabase = mongoDatabase.withCodecRegistry(codecRegistry);
         this.actorSystem = actorSystem;
-        this.conversions = new Conversions(new ObjectMapper());
         this.materializer = materializer;
     }
 
@@ -78,11 +74,11 @@ public class MongoDatabase {
     }
 
     public MongoCollection<JsValue> getJsonCollection(String collectionName) {
-        return new MongoCollection<>(conversions, mongoDatabase.getCollection(collectionName, JsValue.class), actorSystem);
+        return new MongoCollection<>(mongoDatabase.getCollection(collectionName, JsValue.class), actorSystem);
     }
 
     public MongoCollection<Document> getDocumentCollection(String collectionName) {
-        return new MongoCollection<>(conversions, mongoDatabase.getCollection(collectionName), actorSystem);
+        return new MongoCollection<>(mongoDatabase.getCollection(collectionName), actorSystem);
     }
 
     public Publisher<Document> runCommand(Bson command) {
