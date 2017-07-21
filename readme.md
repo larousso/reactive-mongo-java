@@ -1,6 +1,6 @@
 # Mongo reactive java 
 
-Wrapper around mongo reactive stream client with AkkaStream, Javaslang and JsonLibJavaslang support. 
+Wrapper around mongo reactive stream client with AkkaStream, Vavr and JsonLibJavaslang support. 
 
 ## Installation 
 
