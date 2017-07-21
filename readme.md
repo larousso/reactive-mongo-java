@@ -22,7 +22,7 @@ repositories {
 
 ```groovy
 dependencies {
-    compile("com.adelegue:reactive-mongo-java:1.0.0")
+    compile("com.adelegue:reactive-mongo-java:2.0.1")
 }
 ```
 
