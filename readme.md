@@ -56,19 +56,19 @@ CompletionStage<Option<Success>> insertStatus = collection.insertOne(ragnar).one
 JsObject floki = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Floki"), $("created", MongoWrites.date(new Date())));
 JsObject rollo = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Rollo"), $("created", MongoWrites.date(new Date())));
 
-CompletionStage<Option<Success>> insertManyStatus = collection.insertMany(Arrays.asList(floki, rollo)).one();
+Future<Option<Success>> insertManyStatus = collection.insertMany(Arrays.asList(floki, rollo)).one();
 
 //Find one 
-CompletionStage<Option<JsValue>> ragnard = collection.find(Json.obj($("name", "Ragnard"))).one();
+Future<Option<JsValue>> ragnard = collection.find(Json.obj($("name", "Ragnard"))).one();
 
 //With conversion 
-CompletionStage<Option<Viking>> mayBeFloki = collection.find(Json.obj($("name", "Floki"))).one(reader(Viking.reader));
+Future<Option<Viking>> mayBeFloki = collection.find(Json.obj($("name", "Floki"))).one(reader(Viking.reader));
 
 //Find multiple
-CompletionStage<List<JsValue>> values = collection.find().list();
+Future<List<JsValue>> values = collection.find().list();
 
 //With conversion 
-CompletionStage<List<Viking>> vikings = collection.find().list(reader(Viking.reader));
+Future<List<Viking>> vikings = collection.find().list(reader(Viking.reader));
 
 //Stream 
 ActorSystem actorSystem = ActorSystem.create();
