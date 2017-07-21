@@ -6,11 +6,11 @@ import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import io.vavr.collection.List;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import org.reactivestreams.Publisher;
 import reactive.mongo.DocReader;
 
-import java.util.concurrent.CompletionStage;
 
 /**
  * Created by adelegue on 12/04/2017.
@@ -25,30 +25,26 @@ public class DocResult<DOC> {
         this.materializer = materializer;
     }
 
-    public CompletionStage<Option<DOC>> one() {
-        return stream()
-                .runWith(Sink.headOption(), materializer)
-                .thenApply(Option::ofOptional);
+    public Future<Option<DOC>> one() {
+        return Future.fromCompletableFuture(stream().runWith(Sink.headOption(), materializer).toCompletableFuture())
+                .map(Option::ofOptional);
     }
 
-    public <T> CompletionStage<Option<T>> one(DocReader<DOC, T> reader) {
-        return stream(reader)
-                .runWith(Sink.headOption(), materializer)
-                .thenApply(Option::ofOptional);
-    }
-
-
-    public CompletionStage<List<DOC>> list() {
-        return stream()
-                .runWith(Sink.seq(), materializer)
-                .thenApply(List::ofAll);
+    public <T> Future<Option<T>> one(DocReader<DOC, T> reader) {
+        return Future.fromCompletableFuture(stream(reader).runWith(Sink.headOption(), materializer).toCompletableFuture())
+                .map(Option::ofOptional);
     }
 
 
-    public <T> CompletionStage<List<T>> list(DocReader<DOC, T> reader) {
-        return stream(reader)
-                .runWith(Sink.seq(), materializer)
-                .thenApply(List::ofAll);
+    public Future<List<DOC>> list() {
+        return Future.fromCompletableFuture(stream().runWith(Sink.seq(), materializer).toCompletableFuture())
+                .map(List::ofAll);
+    }
+
+
+    public <T> Future<List<T>> list(DocReader<DOC, T> reader) {
+        return Future.fromCompletableFuture(stream(reader).runWith(Sink.seq(), materializer).toCompletableFuture())
+                .map(List::ofAll);
     }
 
     public Source<DOC, NotUsed> stream() {

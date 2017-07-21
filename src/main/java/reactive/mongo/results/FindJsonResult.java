@@ -5,11 +5,11 @@ import akka.stream.javadsl.Sink;
 import com.mongodb.CursorType;
 import com.mongodb.client.model.Collation;
 import com.mongodb.reactivestreams.client.FindPublisher;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import org.bson.conversions.Bson;
 import reactive.mongo.DocReader;
 
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,19 +25,18 @@ public class FindJsonResult<DOC> extends DocResult<DOC> {
     }
 
     @Override
-    public CompletionStage<Option<DOC>> one() {
-        return stream()
-                .runWith(Sink.headOption(), materializer)
-                .thenApply(Option::ofOptional);
+    public Future<Option<DOC>> one() {
+        return Future.fromCompletableFuture(stream().runWith(Sink.headOption(), materializer).toCompletableFuture())
+                .map(Option::ofOptional);
     }
 
 
     @Override
-    public <T> CompletionStage<Option<T>> one(DocReader<DOC, T> reader) {
-        return stream()
+    public <T> Future<Option<T>> one(DocReader<DOC, T> reader) {
+        return Future.fromCompletableFuture(stream()
                 .via(toObj(reader))
-                .runWith(Sink.headOption(), materializer)
-                .thenApply(Option::ofOptional);
+                .runWith(Sink.headOption(), materializer).toCompletableFuture())
+                .map(Option::ofOptional);
     }
 
 

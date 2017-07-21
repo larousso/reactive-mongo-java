@@ -4,11 +4,10 @@ import akka.NotUsed;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import io.vavr.collection.List;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import org.reactivestreams.Publisher;
-
-import java.util.List;
-import java.util.concurrent.CompletionStage;
 
 /**
  * Created by adelegue on 12/04/2017.
@@ -22,15 +21,14 @@ public class SimpleResult<T> {
         this.materializer = materializer;
     }
 
-    public CompletionStage<Option<T>> one() {
-        return stream()
-                .runWith(Sink.headOption(), materializer)
-                .thenApply(Option::ofOptional);
+    public Future<Option<T>> one() {
+        return Future.fromCompletableFuture(stream().runWith(Sink.headOption(), materializer).toCompletableFuture())
+                .map(Option::ofOptional);
     }
 
-    public CompletionStage<List<T>> list() {
-        return stream()
-                .runWith(Sink.seq(), materializer);
+    public Future<List<T>> list() {
+        return Future.fromCompletableFuture(stream().runWith(Sink.seq(), materializer).toCompletableFuture())
+                .map(List::ofAll);
     }
 
     public Source<T, NotUsed> stream() {

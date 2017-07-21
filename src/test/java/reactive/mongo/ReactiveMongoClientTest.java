@@ -10,6 +10,7 @@ import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.connection.ClusterSettings;
 import com.mongodb.reactivestreams.client.Success;
 import io.vavr.collection.List;
+import io.vavr.concurrent.Future;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -33,7 +34,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
 import static com.mongodb.client.model.Filters.*;
@@ -70,13 +70,13 @@ public class ReactiveMongoClientTest implements WithMongo {
         client = ReactiveMongoClient.create(actorSystem, settings);
         databaseName = "test-" + random.nextInt();
         database = client.getDatabase(databaseName);
-        database.drop().one().toCompletableFuture().get();
+        database.drop().one().get();
 
     }
 
     @After
     public void cleanUp() throws ExecutionException, InterruptedException {
-        database.drop().one().toCompletableFuture().get();
+        database.drop().one().get();
     }
 
     @Test
@@ -95,7 +95,7 @@ public class ReactiveMongoClientTest implements WithMongo {
         JsObject floki = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Floki"), $("created", MongoWrites.date(new Date())));
         JsObject rollo = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Rollo"), $("created", MongoWrites.date(new Date())));
 
-        collection.insertMany(Arrays.asList(ragnar, floki, rollo)).one().toCompletableFuture().get();
+        collection.insertMany(Arrays.asList(ragnar, floki, rollo)).one().get();
 
         Date lowerDate = new SimpleDateFormat("yyyy-MM-dd").parse("2016-01-01");
         Date higherDate = new SimpleDateFormat("yyyy-MM-dd").parse("2016-02-02");
@@ -108,7 +108,7 @@ public class ReactiveMongoClientTest implements WithMongo {
         )));
 
         List<JsValue> searchByDate = collection.find(query)
-                .list().toCompletableFuture().get();
+                .list().get();
 
         assertThat(searchByDate).isNotEmpty();
         assertThat(searchByDate).hasSize(1);
@@ -128,12 +128,12 @@ public class ReactiveMongoClientTest implements WithMongo {
                 $("created", MongoWrites.date(created)),
                 $("childs", Json.arr($("name", "Bjorn")))
         );
-        collection.insertOne(ragnar).one().toCompletableFuture().get();
+        collection.insertOne(ragnar).one().get();
 
         JsObject query = Json.obj($("_id", MongoWrites.objectId(id)));
 
         Option<JsValue> searchByDate = collection.find(query)
-                .one().toCompletableFuture().get();
+                .one().get();
 
         assertThat(searchByDate).isNotEmpty();
         assertThat(searchByDate.get()).isEqualTo(ragnar);
@@ -152,12 +152,12 @@ public class ReactiveMongoClientTest implements WithMongo {
                 $("created", MongoWrites.date(created)),
                 $("childs", Json.arr($("name", "Bjorn")))
         );
-        collection.insertOne(ragnar).one().toCompletableFuture().get();
+        collection.insertOne(ragnar).one().get();
 
         JsObject query = Json.obj($("name", MongoWrites.regex("agn")));
 
         Option<JsValue> searchByDate = collection.find(query)
-                .one().toCompletableFuture().get();
+                .one().get();
 
         assertThat(searchByDate).isNotEmpty();
         assertThat(searchByDate.get()).isEqualTo(ragnar);
@@ -165,7 +165,7 @@ public class ReactiveMongoClientTest implements WithMongo {
         JsObject query2 = Json.obj($("name", MongoWrites.regex("floki")));
 
         assertThat(collection.find(query2)
-                .one().toCompletableFuture().get()).isEmpty();
+                .one().get()).isEmpty();
 
     }
 
@@ -179,14 +179,14 @@ public class ReactiveMongoClientTest implements WithMongo {
         Document ragnar = new Document().append("_id", id).append("name", "Ragnard").append("created", created);
         Document floki = new Document().append("name", "Floki").append("created", new Date());
         Document rollo = new Document().append("name", "Rollo").append("created", new Date());
-        collection.insertMany(Arrays.asList(ragnar, floki, rollo)).one().toCompletableFuture().get();
+        collection.insertMany(Arrays.asList(ragnar, floki, rollo)).one().get();
 
         Date lowerDate = new SimpleDateFormat("yyyy-MM-dd").parse("2016-01-01");
         Date higherDate = new SimpleDateFormat("yyyy-MM-dd").parse("2016-02-02");
 
         Bson created1 = and(gte("created", lowerDate), lte("created", higherDate));
         List<Document> searchByDate = collection.find(created1)
-                .list().toCompletableFuture().get();
+                .list().get();
 
         assertThat(searchByDate).isNotEmpty();
         assertThat(searchByDate).hasSize(1);
@@ -205,12 +205,12 @@ public class ReactiveMongoClientTest implements WithMongo {
         ), 2L, created);
         JsValue json = Json.toJson(ragnar, Viking.writes);
 
-        collection.insertOne(json).one().toCompletableFuture().get();
+        collection.insertOne(json).one().get();
 
         List<Viking> searchResult = collection.find(Json.obj(
                     $("nbChilds", Json.obj($("$eq", 2L)))
                 ))
-                .list(reader(Viking.reader)).toCompletableFuture().get();
+                .list(reader(Viking.reader)).get();
 
         assertThat(searchResult).isNotEmpty();
         assertThat(searchResult.head()).isEqualTo(ragnar);
@@ -218,7 +218,7 @@ public class ReactiveMongoClientTest implements WithMongo {
         List<Viking> searchEmptyResult = collection.find(Json.obj(
                 $("nbChilds", Json.obj($("$eq", MongoWrites.numberLong(0L))))
         ))
-                .list(reader(Viking.reader)).toCompletableFuture().get();
+                .list(reader(Viking.reader)).get();
 
         assertThat(searchEmptyResult).isEmpty();
 
@@ -236,26 +236,26 @@ public class ReactiveMongoClientTest implements WithMongo {
                 $("childs", Json.arr($("name", "Bjorn")))
         );
 
-        CompletionStage<Option<Success>> insertStatus = collection.insertOne(ragnar).one();
-        insertStatus.toCompletableFuture().get();
+        Future<Option<Success>> insertStatus = collection.insertOne(ragnar).one();
+        insertStatus.get();
 
         Date created = new SimpleDateFormat("yyyy-MM-dd").parse("2016-02-01");
         JsObject floki = Json.obj($("name", "Floki"), $("created", MongoWrites.date(created)));
         JsObject rollo = Json.obj($("name", "Rollo"), $("created", MongoWrites.date(new Date())));
-        CompletionStage<Option<Success>> insertManyStatus = collection.insertMany(Arrays.asList(floki, rollo)).one();
-        insertManyStatus.toCompletableFuture().get();
+        Future<Option<Success>> insertManyStatus = collection.insertMany(Arrays.asList(floki, rollo)).one();
+        insertManyStatus.get();
 
-        CompletionStage<Option<JsValue>> ragnard = collection.find(Json.obj($("name", MongoWrites.regex("Ragnard")))).one();
-        JsValue fromDb = ragnard.toCompletableFuture().get().get();
+        Future<Option<JsValue>> ragnard = collection.find(Json.obj($("name", MongoWrites.regex("Ragnard")))).one();
+        JsValue fromDb = ragnard.get().get();
         assertThat(fromDb.asObject().remove("_id")).isEqualTo(ragnar);
 
-        CompletionStage<List<JsValue>> vikings = collection.find().list();
-        List<JsValue> values = vikings.toCompletableFuture().get();
+        Future<List<JsValue>> vikings = collection.find().list();
+        List<JsValue> values = vikings.get();
 
         assertThat(values.map(j -> j.asObject().remove("_id"))).contains(ragnar, floki, rollo);
 
-        CompletionStage<Option<Viking>> mayBeFloki = collection.find(Json.obj($("name", "Floki"))).one(reader(Viking.reader));
-        Option<Viking> OptmayBeFloki = mayBeFloki.toCompletableFuture().get();
+        Future<Option<Viking>> mayBeFloki = collection.find(Json.obj($("name", "Floki"))).one(reader(Viking.reader));
+        Option<Viking> OptmayBeFloki = mayBeFloki.get();
 
         assertThat(OptmayBeFloki).isNotEmpty();
         assertThat(OptmayBeFloki.get()).isEqualTo(new Viking(ObjectId.get().toString(), "Floki", List.empty(), 0L, new Date()));
@@ -265,7 +265,7 @@ public class ReactiveMongoClientTest implements WithMongo {
 
         Bson query = gte("created", lowerDate);
         Option<Viking> mayBeFloki2 = collection.find(query)
-                .one(reader(Viking.reader)).toCompletableFuture().get();
+                .one(reader(Viking.reader)).get();
 
         assertThat(mayBeFloki2).isNotEmpty();
         assertThat(mayBeFloki2.get()).isEqualTo(new Viking(ObjectId.get().toString(), "Floki", List.empty(), 0L, new Date()));
