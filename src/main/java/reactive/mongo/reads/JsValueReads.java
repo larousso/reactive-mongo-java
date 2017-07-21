@@ -1,6 +1,6 @@
 package reactive.mongo.reads;
 
-import javaslang.control.Option;
+import io.vavr.control.Option;
 import org.reactivecouchbase.json.JsValue;
 import org.reactivecouchbase.json.mapping.Reader;
 import reactive.mongo.DocReader;

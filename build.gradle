@@ -9,11 +9,12 @@ apply plugin: 'idea'
 apply plugin: 'maven-publish'
 
 group 'com.adelegue'
-version =  '1.0.4-SNAPSHOT'
+version =  '2.0.0-SNAPSHOT'
 
 jar {
     baseName = 'reactive-mongo-java'
 }
+
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -28,13 +29,15 @@ repositories {
     }
 }
 
+def akkaVersion = "2.5.3"
+def scalaVersion = "2.12"
 
 dependencies {
-    compile("io.javaslang:javaslang:2.0.5")
-    compile("com.typesafe.akka:akka-stream_2.11:2.4.16")
-    compile("org.reactivecouchbase:json-lib-javaslang:1.0.0")
+    compile("io.vavr:vavr:0.9")
+    compile("com.typesafe.akka:akka-stream_${scalaVersion}:${akkaVersion}")
+    compile("org.reactivecouchbase:json-lib-javaslang:2.0.0")
     compile("io.javaslang:javaslang-jackson:2.0.5")
-    compile("org.mongodb:mongodb-driver-reactivestreams:1.4.0")
+    compile("org.mongodb:mongodb-driver-reactivestreams:1.5.0")
     testCompile("com.typesafe.akka:akka-testkit_2.11:2.4.16")
     testCompile("com.github.fakemongo:fongo:2.0.6")
     testCompile("org.slf4j:slf4j-api:1.7.22")

@@ -1,8 +1,8 @@
 package reactive.mongo.codec;
 
 import akka.Done;
-import javaslang.Tuple2;
-import javaslang.control.Option;
+import io.vavr.Tuple2;
+import io.vavr.control.Option;
 import org.bson.*;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
@@ -16,9 +16,9 @@ import reactive.mongo.json.MongoReads;
 import java.math.BigDecimal;
 import java.util.function.Consumer;
 
-import static javaslang.API.*;
-import static javaslang.Patterns.*;
-import static javaslang.Predicates.*;
+import static io.vavr.API.*;
+import static io.vavr.Patterns.*;
+import static io.vavr.Predicates.*;
 
 /**
  * Created by adelegue on 10/05/2017.
@@ -67,13 +67,13 @@ public class JsValueCodec implements Codec<JsValue>{
 
     private Done writeJsValue(Option<String> name, JsValue jsValue, BsonWriter writer) {
         return Match(jsValue).of(
-                Case(instanceOf(JsString.class), value -> writeString(name, value, writer)),
-                Case(instanceOf(JsNumber.class), value -> writeNumber(name, value, writer)),
-                Case(instanceOf(JsBoolean.class), value -> writeBoolean(name, value, writer)),
-                Case(instanceOf(JsNull.class), value -> writeNull(name, value, writer)),
-                Case(instanceOf(JsUndefined.class), value -> writeUndefined(name, value, writer)),
-                Case(instanceOf(JsArray.class), value -> writeArray(name, value, writer)),
-                Case(instanceOf(JsObject.class), value -> writeObject(name, value, writer))
+                Case($(instanceOf(JsString.class)), value -> writeString(name, value, writer)),
+                Case($(instanceOf(JsNumber.class)), value -> writeNumber(name, value, writer)),
+                Case($(instanceOf(JsBoolean.class)), value -> writeBoolean(name, value, writer)),
+                Case($(instanceOf(JsNull.class)), value -> writeNull(name, value, writer)),
+                Case($(instanceOf(JsUndefined.class)), value -> writeUndefined(name, value, writer)),
+                Case($(instanceOf(JsArray.class)), value -> writeArray(name, value, writer)),
+                Case($(instanceOf(JsObject.class)), value -> writeObject(name, value, writer))
         );
     }
 

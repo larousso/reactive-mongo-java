@@ -1,6 +1,6 @@
 package reactive.mongo;
 
-import javaslang.control.Option;
+import io.vavr.control.Option;
 
 /**
  * Created by adelegue on 10/05/2017.

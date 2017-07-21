@@ -5,7 +5,7 @@ import akka.stream.javadsl.Sink;
 import com.mongodb.CursorType;
 import com.mongodb.client.model.Collation;
 import com.mongodb.reactivestreams.client.FindPublisher;
-import javaslang.control.Option;
+import io.vavr.control.Option;
 import org.bson.conversions.Bson;
 import reactive.mongo.DocReader;
 

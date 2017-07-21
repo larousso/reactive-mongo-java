@@ -1,8 +1,8 @@
 package reactive.mongo.json;
 
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.control.Option;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.control.Option;
 import org.bson.*;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
@@ -15,8 +15,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.function.Function;
 
-import static javaslang.API.*;
-import static javaslang.Predicates.*;
+import static io.vavr.API.*;
+import static io.vavr.Predicates.*;
 
 /**
  * Created by adelegue on 10/05/2017.
@@ -51,22 +51,22 @@ public class MongoReads {
     public static Reader<Date> date =
         field("$date", $date ->
                 Match($date).option(
-                    Case(instanceOf(JsNumber.class), n -> new Date(n.value.longValue())),
-                    Case(instanceOf(JsString.class), n -> new Date(DatatypeConverter.parseDateTime(n.value).getTimeInMillis()))
+                    Case($(instanceOf(JsNumber.class)), n -> new Date(n.value.longValue())),
+                    Case($(instanceOf(JsString.class)), n -> new Date(DatatypeConverter.parseDateTime(n.value).getTimeInMillis()))
                 )
         );
 
     public static Reader<BsonDateTime> bsonDateTime =
             field("$date", $date ->
                     Match($date).option(
-                            Case(instanceOf(JsNumber.class), n -> new BsonDateTime(n.value.longValue())),
-                            Case(instanceOf(JsString.class), n -> new BsonDateTime(DatatypeConverter.parseDateTime(n.value).getTimeInMillis()))
+                            Case($(instanceOf(JsNumber.class)), n -> new BsonDateTime(n.value.longValue())),
+                            Case($(instanceOf(JsString.class)), n -> new BsonDateTime(DatatypeConverter.parseDateTime(n.value).getTimeInMillis()))
                     )
             );
 
     public static Reader<ObjectId> objectId = field("$oid", $oid ->
             Match($oid).option(
-                    Case(instanceOf(JsString.class), n -> new ObjectId(n.value))
+                    Case($(instanceOf(JsString.class)), n -> new ObjectId(n.value))
             )
     );
 
@@ -74,33 +74,33 @@ public class MongoReads {
 
     public static Reader<String> strObjectId = field("$oid", $oid ->
             Match($oid).option(
-                    Case(instanceOf(JsString.class), n -> n.value)
+                    Case($(instanceOf(JsString.class)), n -> n.value)
             )
     );
 
     public static Reader<Long> numberLong = field("$numberLong", $numberLong ->
             Match($numberLong).option(
-                    Case(instanceOf(JsNumber.class), n -> n.value.longValue()),
-                    Case(instanceOf(JsString.class), n -> Long.decode(n.value))
+                    Case($(instanceOf(JsNumber.class)), n -> n.value.longValue()),
+                    Case($(instanceOf(JsString.class)), n -> Long.decode(n.value))
             )
     );
 
     public static Reader<BsonInt64> bsonNumberLong = field("$numberLong", $numberLong ->
             Match($numberLong).option(
-                    Case(instanceOf(JsNumber.class), n -> new BsonInt64(n.value.longValue())),
-                    Case(instanceOf(JsString.class), n -> new BsonInt64(Long.decode(n.value)))
+                    Case($(instanceOf(JsNumber.class)), n -> new BsonInt64(n.value.longValue())),
+                    Case($(instanceOf(JsString.class)), n -> new BsonInt64(Long.decode(n.value)))
             )
     );
 
     public static Reader<BigDecimal> numberDecimal = field("$numberDecimal", $numberDecimal ->
             Match($numberDecimal).option(
-                    Case(instanceOf(JsNumber.class), n -> n.value)
+                    Case($(instanceOf(JsNumber.class)), n -> n.value)
             )
     );
 
     public static Reader<BsonDecimal128> bsonNumberDecimal = field("$numberDecimal", $numberDecimal ->
             Match($numberDecimal).option(
-                    Case(instanceOf(JsNumber.class), n -> new BsonDecimal128(new Decimal128(n.value)))
+                    Case($(instanceOf(JsNumber.class)), n -> new BsonDecimal128(new Decimal128(n.value)))
             )
     );
 
@@ -117,19 +117,19 @@ public class MongoReads {
 
     public static Reader<String> symbol = field("$symbol", $symbol ->
             Match($symbol).option(
-                    Case(instanceOf(JsString.class), n -> n.value)
+                    Case($(instanceOf(JsString.class)), n -> n.value)
             )
     );
 
     public static Reader<BsonSymbol> bsonSymbol = field("$symbol", $symbol ->
             Match($symbol).option(
-                    Case(instanceOf(JsString.class), n -> new BsonSymbol(n.value))
+                    Case($(instanceOf(JsString.class)), n -> new BsonSymbol(n.value))
             )
     );
 
     public static Reader<Tuple2<Integer, Integer>> timestamp = field("$timestamp", $timestamp ->
             Match($timestamp).option(
-                    Case(instanceOf(JsObject.class), n ->
+                    Case($(instanceOf(JsObject.class)), n ->
                         Tuple.of(n.field("i").asInteger(), n.field("i").asInteger())
                     )
             )
@@ -137,7 +137,7 @@ public class MongoReads {
 
     public static Reader<BsonTimestamp> bsonTimestamp = field("$timestamp", $timestamp ->
             Match($timestamp).option(
-                    Case(instanceOf(JsObject.class), n ->
+                    Case($(instanceOf(JsObject.class)), n ->
                             new BsonTimestamp(n.field("i").asInteger(), n.field("i").asInteger())
                     )
             )
@@ -163,7 +163,7 @@ public class MongoReads {
      };
 
     public static Reader<BsonDocument> bsonDocument = json -> Match(json).option(
-            Case(instanceOf(JsObject.class), jsObject -> new BsonDocument(jsObject.values.map(p ->
+            Case($(instanceOf(JsObject.class)), jsObject -> new BsonDocument(jsObject.values.map(p ->
                     new BsonElement(p._1, p._2.as(MongoReads.bsonValue))
             ).toJavaList()))
         )
@@ -171,7 +171,7 @@ public class MongoReads {
         .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure, object expected")));
 
     public static Reader<BsonValue> objToBsonValue = json -> Match(json).option(
-            Case(instanceOf(JsObject.class), jsObject -> {
+            Case($(instanceOf(JsObject.class)), jsObject -> {
                 if (jsObject.fieldAsOpt("$oid").isDefined()) {
                     return jsObject.as(MongoReads.bsonObjectId);
                 } else if (jsObject.fieldAsOpt("$date").isDefined()) {
@@ -205,26 +205,26 @@ public class MongoReads {
     .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure, object expected")));
 
     public static Reader<BsonBoolean> bsonBoolean = json -> Match(json).option(
-            Case(instanceOf(JsBoolean.class), bool -> new BsonBoolean(bool.value))
+            Case($(instanceOf(JsBoolean.class)), bool -> new BsonBoolean(bool.value))
         )
         .map(JsResult::success)
         .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure, boolean expected")));
 
     public static Reader<BsonNull> bsonNull = json -> Match(json).option(
-            Case(instanceOf(JsNull.class), any -> new BsonNull())
+            Case($(instanceOf(JsNull.class)), any -> new BsonNull())
         )
         .map(JsResult::success)
         .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure, null expected")));
 
     public static Reader<BsonUndefined> bsonUndefined = json -> Match(json).option(
-            Case(instanceOf(JsUndefined.class), any -> new BsonUndefined())
+            Case($(instanceOf(JsUndefined.class)), any -> new BsonUndefined())
         )
         .map(JsResult::success)
         .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure, undefined expected")));
 
 
     public static Reader<BsonNumber> bsonNumber = json -> Match(json).option(
-            Case(instanceOf(JsNumber.class), number -> {
+            Case($(instanceOf(JsNumber.class)), number -> {
                 if(number.value.stripTrailingZeros().scale() <= 0) {
                     return new BsonInt64(number.value.intValue());
                 } else {
@@ -235,12 +235,12 @@ public class MongoReads {
             .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure, number expected")));
 
     public static Reader<BsonString> bsonString = json -> Match(json).option(
-            Case(instanceOf(JsString.class), str -> new BsonString(str.value)))
+            Case($(instanceOf(JsString.class)), str -> new BsonString(str.value)))
             .map(JsResult::success)
             .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure, string expected")));
 
     public static Reader<BsonArray> bsonArray = json -> Match(json).option(
-                Case(instanceOf(JsArray.class), arr ->
+                Case($(instanceOf(JsArray.class)), arr ->
                     new BsonArray(arr.values.map(j -> j.as(MongoReads.bsonValue)).toJavaList()))
             )
             .map(JsResult::success)
@@ -249,13 +249,13 @@ public class MongoReads {
 
 
     public static Reader<BsonValue> bsonValue = json -> Match(json).option(
-            Case(instanceOf(JsArray.class), a -> json.as(MongoReads.bsonArray)),
-            Case(instanceOf(JsBoolean.class), b -> json.as(MongoReads.bsonBoolean)),
-            Case(instanceOf(JsNull.class), n -> json.as(MongoReads.bsonNull)),
-            Case(instanceOf(JsUndefined.class), n -> json.as(MongoReads.bsonUndefined)),
-            Case(instanceOf(JsNumber.class), n -> json.as(MongoReads.bsonNumber)),
-            Case(instanceOf(JsObject.class), o -> json.as(MongoReads.objToBsonValue)),
-            Case(instanceOf(JsString.class), s -> json.as(MongoReads.bsonString))
+            Case($(instanceOf(JsArray.class)), a -> json.as(MongoReads.bsonArray)),
+            Case($(instanceOf(JsBoolean.class)), b -> json.as(MongoReads.bsonBoolean)),
+            Case($(instanceOf(JsNull.class)), n -> json.as(MongoReads.bsonNull)),
+            Case($(instanceOf(JsUndefined.class)), n -> json.as(MongoReads.bsonUndefined)),
+            Case($(instanceOf(JsNumber.class)), n -> json.as(MongoReads.bsonNumber)),
+            Case($(instanceOf(JsObject.class)), o -> json.as(MongoReads.objToBsonValue)),
+            Case($(instanceOf(JsString.class)), s -> json.as(MongoReads.bsonString))
         )
         .map(JsResult::success)
         .getOrElse(() -> JsResult.error(new IllegalStateException("Wrong structure")));

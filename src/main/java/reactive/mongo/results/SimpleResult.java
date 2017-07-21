@@ -4,7 +4,7 @@ import akka.NotUsed;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
-import javaslang.control.Option;
+import io.vavr.control.Option;
 import org.reactivestreams.Publisher;
 
 import java.util.List;

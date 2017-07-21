@@ -1,6 +1,6 @@
 package reactive.mongo.json;
 
-import javaslang.control.Option;
+import io.vavr.control.Option;
 import org.bson.*;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;

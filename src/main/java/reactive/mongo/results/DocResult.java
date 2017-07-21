@@ -5,8 +5,8 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
-import javaslang.collection.List;
-import javaslang.control.Option;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.reactivestreams.Publisher;
 import reactive.mongo.DocReader;
 
@@ -58,8 +58,7 @@ public class DocResult<DOC> {
 
 
     public <T> Source<T, NotUsed> stream(DocReader<DOC, T> reader) {
-        return stream()
-                .via(toObj(reader));
+        return stream().via(toObj(reader));
     }
 
     protected <T> Flow<DOC, T, NotUsed> toObj(DocReader<DOC, T> reader){

@@ -9,9 +9,9 @@ import com.mongodb.ServerAddress;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.connection.ClusterSettings;
 import com.mongodb.reactivestreams.client.Success;
-import javaslang.collection.List;
-import javaslang.control.Option;
-import javaslang.control.Try;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -59,7 +59,7 @@ public class ReactiveMongoClientTest implements WithMongo {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws ExecutionException, InterruptedException {
         actorSystem = ActorSystem.create();
         //Integer port = port();
         Integer port = 27017;
@@ -70,6 +70,8 @@ public class ReactiveMongoClientTest implements WithMongo {
         client = ReactiveMongoClient.create(actorSystem, settings);
         databaseName = "test-" + random.nextInt();
         database = client.getDatabase(databaseName);
+        database.drop().one().toCompletableFuture().get();
+
     }
 
     @After
@@ -93,7 +95,6 @@ public class ReactiveMongoClientTest implements WithMongo {
         JsObject floki = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Floki"), $("created", MongoWrites.date(new Date())));
         JsObject rollo = Json.obj($("_id", MongoWrites.objectId(ObjectId.get())), $("name", "Rollo"), $("created", MongoWrites.date(new Date())));
 
-        System.out.println(floki);
         collection.insertMany(Arrays.asList(ragnar, floki, rollo)).one().toCompletableFuture().get();
 
         Date lowerDate = new SimpleDateFormat("yyyy-MM-dd").parse("2016-01-01");
@@ -184,7 +185,6 @@ public class ReactiveMongoClientTest implements WithMongo {
         Date higherDate = new SimpleDateFormat("yyyy-MM-dd").parse("2016-02-02");
 
         Bson created1 = and(gte("created", lowerDate), lte("created", higherDate));
-        System.out.println(created1);
         List<Document> searchByDate = collection.find(created1)
                 .list().toCompletableFuture().get();
 
@@ -247,15 +247,12 @@ public class ReactiveMongoClientTest implements WithMongo {
 
         CompletionStage<Option<JsValue>> ragnard = collection.find(Json.obj($("name", MongoWrites.regex("Ragnard")))).one();
         JsValue fromDb = ragnard.toCompletableFuture().get().get();
-        System.out.println("Ragnard" + Json.prettyPrint(fromDb));
         assertThat(fromDb.asObject().remove("_id")).isEqualTo(ragnar);
 
         CompletionStage<List<JsValue>> vikings = collection.find().list();
         List<JsValue> values = vikings.toCompletableFuture().get();
 
         assertThat(values.map(j -> j.asObject().remove("_id"))).contains(ragnar, floki, rollo);
-
-        System.out.println(Json.stringify(collection.find(Json.obj($("name", "Floki"))).one().toCompletableFuture().get().get()));
 
         CompletionStage<Option<Viking>> mayBeFloki = collection.find(Json.obj($("name", "Floki"))).one(reader(Viking.reader));
         Option<Viking> OptmayBeFloki = mayBeFloki.toCompletableFuture().get();
@@ -295,7 +292,7 @@ public class ReactiveMongoClientTest implements WithMongo {
                     json.field("_id").as(MongoReads.strObjectId),
                     json.field("name").asString(),
                     json.field("childs").asOptArray().map(a -> List.ofAll(a).map(Viking::fromJson)).getOrElse(List::empty),
-                    json.field("nbChilds").as(MongoReads.numberLong),
+                    json.field("nbChilds").asOpt(MongoReads.numberLong).getOrElse(0L),
                     json.field("created").as(MongoReads.date)
             ))).getOrElseGet(JsResult::error);
 
