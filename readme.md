@@ -9,12 +9,7 @@ Wrapper around mongo reactive stream client with AkkaStream, Vavr and JsonLibJav
 ```groovy
 repositories {
     mavenCentral()
-    maven {
-        url 'https://raw.githubusercontent.com/larousso/reactive-mongo-java/master/repository/releases/'
-    }
-    flatDir {
-        dirs 'libs'
-    }
+    jcenter()    
 }
 ```
 
@@ -22,7 +17,7 @@ repositories {
 
 ```groovy
 dependencies {
-    compile("com.adelegue:reactive-mongo-java:2.0.1")
+    compile("com.adelegue:reactive-mongo-java:2.0.2")
 }
 ```
 
@@ -104,4 +99,9 @@ Run mongoDB from docker before running unit tests
 ```
 docker run -p 27017:27017 mongo
 ```
+
+## Release 
+
+./gradlew release -PreleaseVersion=x.x.x 
+
 
